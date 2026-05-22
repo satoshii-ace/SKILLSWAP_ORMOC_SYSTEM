@@ -46,6 +46,11 @@ class GoogleLoginController extends Controller
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
+            // Update tokens on subsequent logins
+            $user->update([
+                'google_access_token' => json_encode(['access_token' => $googleUser->token, 'token_type' => 'Bearer']),
+                'google_refresh_token' => $googleUser->refreshToken ?? $user->google_refresh_token,
+            ]);
             return $user;
         }
 
@@ -54,6 +59,8 @@ class GoogleLoginController extends Controller
             'email' => $googleUser->getEmail(),
             'google_id' => $googleUser->getId(),
             'avatar' => $googleUser->getAvatar(),
+            'google_access_token' => json_encode(['access_token' => $googleUser->token, 'token_type' => 'Bearer']),
+            'google_refresh_token' => $googleUser->refreshToken,
             'email_verified_at' => now(),
             'password' => bcrypt(Str::random(16)), // Generate random password
         ]);

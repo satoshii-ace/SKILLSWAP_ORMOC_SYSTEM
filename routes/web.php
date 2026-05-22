@@ -14,7 +14,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('skills.index'); // <- Add this line
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
 
    
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
 });
 
 require __DIR__.'/auth.php';

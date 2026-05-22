@@ -56,7 +56,18 @@ class SkillController extends Controller
             'type' => 'required|in:offered,requested',
         ]);
 
-       
+        // Check if skill already exists for this user
+        $existingSkill = Skill::where('user_id', Auth::id())
+            ->where('title', $validated['title'])
+            ->where('type', $validated['type'])
+            ->first();
+
+        if ($existingSkill) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'You already have a ' . $validated['type'] . ' skill with this title.');
+        }
+
         $validated['user_id'] = Auth::id();
 
         // Create the skill
