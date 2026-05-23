@@ -19,8 +19,23 @@
                         {{ __('Add Skill') }}
                     </x-nav-link>
                     <x-nav-link :href="route('swaps.index')" :active="request()->routeIs('swaps.index')">
-                        {{ __('My Swaps') }}
-                    </x-nav-link>
+    <span class="relative">
+        {{ __('My Swaps') }}
+        
+        @php
+            $pendingCount = \App\Models\Transaction::where('provider_id', auth()->id())
+                                ->where('status', 'pending')
+                                ->count();
+        @endphp
+
+        @if($pendingCount > 0)
+            <span class="absolute -top-1 -right-5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-600 rounded-full border border-[#1e293b] shadow-sm">
+                {{ $pendingCount }}
+            </span>
+        @endif
+    </span>
+</x-nav-link>
+        
                 </div>
             </div>
 
@@ -78,10 +93,8 @@
             <x-responsive-nav-link :href="route('skills.create')" :active="request()->routeIs('skills.create')">
                 {{ __('Add Skill') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('swaps.index')" :active="request()->routeIs('swaps.index')">
-                {{ __('My Swaps') }}
-            </x-responsive-nav-link>
         </div>
+        
 
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
             <div class="px-4">

@@ -6,53 +6,67 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-10">
 
             @if (session('success'))
-                <div class="p-4 bg-green-500/10 border border-green-500 text-green-500 rounded-md">
-                    {{ session('success') }}
-                </div>
+                <div class="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl">{{ session('success') }}</div>
             @endif
             @if (session('error'))
-                <div class="p-4 bg-red-500/10 border border-red-500 text-red-500 rounded-md">
-                    {{ session('error') }}
-                </div>
+                <div class="p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-xl">{{ session('error') }}</div>
             @endif
+            
 
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">Incoming Requests (Needs Action)</h3>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-700 pb-3">Incoming Requests</h3>
                 
                 @if($incomingRequests->isEmpty())
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">No pending incoming requests.</p>
+                    <div class="p-6 bg-gray-800/50 border border-gray-700 rounded-xl text-gray-400 text-sm">No pending requests at the moment.</div>
                 @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($incomingRequests as $request)
-                            <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                    <strong class="text-white">{{ $request->receiver->name }}</strong> wants your skill:
-                                </p>
-                                <p class="text-lg font-bold text-blue-500 mb-4">{{ $request->skill->title }}</p>
+                            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <div class="flex gap-2 mb-3">
+                                        <span class="px-2 py-1 text-[10px] font-bold text-yellow-400 bg-yellow-400/10 rounded-full tracking-wider uppercase">Needs Action</span>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-white mb-2">{{ $request->skill->title }}</h4>
+                                </div>
 
-                                <div class="flex flex-col gap-3">
-                                    <form method="POST" action="{{ route('transactions.update', $request) }}" class="flex flex-col gap-2">
-                                        @csrf
-                                        @method('PATCH')
+                                <div class="border-t border-gray-700 my-4"></div>
+
+                                <div class="flex items-center gap-3 mb-5">
+                                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs uppercase">
+                                        {{ substr($request->receiver->name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-white">{{ $request->receiver->name }}</p>
+                                        <p class="text-xs text-gray-400">Wants to swap with you</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-2 mt-auto">
+                                    <form method="POST" action="{{ route('transactions.update', $request) }}" class="flex flex-col gap-3">
+                                        @csrf @method('PATCH')
                                         <input type="hidden" name="status" value="accepted">
-                                        <label class="text-xs text-gray-400 uppercase tracking-wider">Schedule Meeting (Google Calendar):</label>
-                                        <input type="datetime-local" name="scheduled_date" required class="bg-gray-800 text-white border border-gray-600 rounded text-sm p-2 w-full">
                                         
-                                        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-sm transition">
-                                            Accept & Schedule
-                                        </button>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 block">Start Time:</label>
+                                                <input type="datetime-local" name="scheduled_date" required class="bg-gray-900 text-gray-300 border border-gray-700 rounded-lg text-xs p-2 w-full focus:ring-blue-500 focus:border-blue-500">
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 block">End Time:</label>
+                                                <input type="datetime-local" name="scheduled_end_date" class="bg-gray-900 text-gray-300 border border-gray-700 rounded-lg text-xs p-2 w-full focus:ring-blue-500 focus:border-blue-500">
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-md">Accept & Sync</button>
                                     </form>
 
                                     <form method="POST" action="{{ route('transactions.update', $request) }}">
-                                        @csrf
-                                        @method('PATCH')
+                                        @csrf @method('PATCH')
                                         <input type="hidden" name="status" value="rejected">
-                                        <button type="submit" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500 font-bold py-2 px-4 rounded text-sm transition">
-                                            Decline Swap
-                                        </button>
+                                        <button type="submit" class="w-full bg-transparent hover:bg-red-500/10 text-gray-400 hover:text-red-400 border border-gray-600 hover:border-red-500/50 font-semibold py-2 rounded-lg text-sm transition">Decline</button>
                                     </form>
                                 </div>
                             </div>
@@ -61,30 +75,43 @@
                 @endif
             </div>
 
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 border border-green-500/30">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700 flex items-center gap-2">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-700 pb-3 flex items-center gap-2">
                     <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     Upcoming Scheduled Meetings
                 </h3>
                 
                 @if($scheduledSwaps->isEmpty())
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">No upcoming swaps scheduled.</p>
+                    <div class="p-6 bg-gray-800/50 border border-gray-700 rounded-xl text-gray-400 text-sm">No upcoming swaps scheduled.</div>
                 @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($scheduledSwaps as $swap)
-                            <div class="bg-green-500/5 border border-green-500/20 p-4 rounded-lg relative overflow-hidden">
-                                <div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">
-                                    Confirmed
-                                </div>
-                                <p class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ $swap->skill->title }}</p>
+                            @php $partner = Auth::id() === $swap->provider_id ? $swap->receiver : $swap->provider; @endphp
+                            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
                                 
-                                <div class="text-sm text-gray-600 dark:text-gray-400 mt-3 space-y-1">
-                                    <p><strong class="text-gray-500">Meeting with:</strong> 
-                                        {{ Auth::id() === $swap->provider_id ? $swap->receiver->name : $swap->provider->name }}
-                                    </p>
-                                    <p><strong class="text-gray-500">Date & Time:</strong> 
-                                        {{ \Carbon\Carbon::parse($swap->scheduled_date)->format('F j, Y @ g:i A') }}
-                                    </p>
+                                <div>
+                                    <div class="flex gap-2 mb-3">
+                                        <span class="px-2 py-1 text-[10px] font-bold text-green-400 bg-green-400/10 rounded-full tracking-wider uppercase">Confirmed</span>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-white mb-2">{{ $swap->skill->title }}</h4>
+                                </div>
+
+                                <div class="border-t border-gray-700 my-4"></div>
+
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs uppercase">
+                                        {{ substr($partner->name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-white">{{ $partner->name }}</p>
+                                        <p class="text-xs text-gray-400">Meeting Partner</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-900/50 rounded-lg p-3 border border-gray-700 mt-auto">
+                                    <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Scheduled For:</p>
+                                    <p class="text-sm font-medium text-white">{{ \Carbon\Carbon::parse($swap->scheduled_date)->format('F j, Y @ g:i A') }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -92,30 +119,41 @@
                 @endif
             </div>
 
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">My Sent Requests</h3>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-700 pb-3">My Sent Requests</h3>
                 
                 @if($myRequests->isEmpty())
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">You haven't requested any swaps yet.</p>
+                    <div class="p-6 bg-gray-800/50 border border-gray-700 rounded-xl text-gray-400 text-sm">You haven't requested any swaps yet.</div>
                 @else
-                    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($myRequests as $request)
-                            <li class="py-3 flex justify-between items-center">
+                            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-sm flex flex-col justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $request->skill->title }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Provider: {{ $request->provider->name }}</p>
+                                    <div class="flex gap-2 mb-3">
+                                        <span class="px-2 py-1 text-[10px] font-bold rounded-full tracking-wider uppercase
+                                            {{ $request->status === 'pending' ? 'bg-yellow-400/10 text-yellow-400' : '' }}
+                                            {{ $request->status === 'accepted' ? 'bg-green-400/10 text-green-400' : '' }}
+                                            {{ $request->status === 'rejected' ? 'bg-red-400/10 text-red-400' : '' }}">
+                                            {{ $request->status }}
+                                        </span>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-white mb-2">{{ $request->skill->title }}</h4>
                                 </div>
-                                <div>
-                                    <span class="px-3 py-1 text-xs rounded-full font-bold uppercase tracking-wider
-                                        {{ $request->status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' : '' }}
-                                        {{ $request->status === 'accepted' ? 'bg-green-500/20 text-green-500' : '' }}
-                                        {{ $request->status === 'rejected' ? 'bg-red-500/20 text-red-500' : '' }}">
-                                        {{ $request->status }}
-                                    </span>
+
+                                <div class="border-t border-gray-700 my-4"></div>
+
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs uppercase">
+                                        {{ substr($request->provider->name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-white">{{ $request->provider->name }}</p>
+                                        <p class="text-xs text-gray-400">Provider</p>
+                                    </div>
                                 </div>
-                            </li>
+                            </div>
                         @endforeach
-                    </ul>
+                    </div>
                 @endif
             </div>
 

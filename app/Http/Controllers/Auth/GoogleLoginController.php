@@ -45,10 +45,19 @@ class GoogleLoginController extends Controller
     {
         $user = User::where('email', $googleUser->getEmail())->first();
 
+        // Prepare the token array
+        // Note: We include the token, type, and importantly, the expiry time if available
+        $tokenData = [
+            'access_token'  => $googleUser->token,
+            'token_type'    => 'Bearer',
+            'expires_in'    => $googleUser->expiresIn,
+        ];
+
         if ($user) {
-            // Update tokens on subsequent logins
             $user->update([
-                'google_access_token' => json_encode(['access_token' => $googleUser->token, 'token_type' => 'Bearer']),
+                // REMOVED json_encode - Laravel's array cast does this automatically
+                'google_access_token' => $tokenData, 
+                // Only update refresh token if Google actually provided a new one
                 'google_refresh_token' => $googleUser->refreshToken ?? $user->google_refresh_token,
             ]);
             return $user;
@@ -59,10 +68,11 @@ class GoogleLoginController extends Controller
             'email' => $googleUser->getEmail(),
             'google_id' => $googleUser->getId(),
             'avatar' => $googleUser->getAvatar(),
-            'google_access_token' => json_encode(['access_token' => $googleUser->token, 'token_type' => 'Bearer']),
+            // REMOVED json_encode
+            'google_access_token' => $tokenData,
             'google_refresh_token' => $googleUser->refreshToken,
             'email_verified_at' => now(),
-            'password' => bcrypt(Str::random(16)), // Generate random password
+            'password' => bcrypt(Str::random(16)),
         ]);
     }
 }

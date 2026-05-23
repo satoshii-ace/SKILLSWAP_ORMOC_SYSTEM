@@ -39,6 +39,8 @@ class User extends Authenticatable
         'google_access_token',
         'google_refresh_token',
     ];
+    // In App\Models\User.php
+
 
     /**
      * Get the attributes that should be cast.
@@ -50,6 +52,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'google_access_token' => 'array',
         ];
     }
     /**

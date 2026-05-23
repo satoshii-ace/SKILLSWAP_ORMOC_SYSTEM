@@ -7,6 +7,18 @@
 
     <div class="py-12" x-data="{ search: '', category: 'All' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+        @if (session('success'))
+                <div class="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl shadow-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-xl shadow-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
             
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
                 <input x-model="search" type="text" placeholder="Search skills by title..." 

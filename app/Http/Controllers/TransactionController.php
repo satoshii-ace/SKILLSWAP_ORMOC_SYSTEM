@@ -8,24 +8,24 @@ use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // 1. Added the Log Facade here!
+use Illuminate\Support\Facades\Log;
 use Exception;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
-{   
+{
     /**
      * Display a listing of the user's swap requests and schedules.
      */
     public function index()
     {
-        // 1. Incoming Requests (Needs Action)
+        $calendarService = new \App\Services\CalendarService();
         $incomingRequests = Transaction::with(['skill', 'receiver'])
             ->where('provider_id', Auth::id())
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        // 2. Upcoming Scheduled Swaps (Accepted meetings for BOTH users)
         $scheduledSwaps = Transaction::with(['skill', 'provider', 'receiver'])
             ->where('status', 'accepted')
             ->where(function($query) {
@@ -35,35 +35,31 @@ class TransactionController extends Controller
             ->orderBy('scheduled_date', 'asc')
             ->get();
 
-        // 3. My Sent Requests (Only show pending or rejected, accepted goes to schedule)
         $myRequests = Transaction::with(['skill', 'provider'])
             ->where('receiver_id', Auth::id())
             ->whereIn('status', ['pending', 'rejected'])
             ->latest()
             ->get();
 
-        return view('swaps.index', compact('incomingRequests', 'scheduledSwaps', 'myRequests'));
+        return view('swaps.index', compact('incomingRequests', 'scheduledSwaps', 'myRequests', 'calendarService'));
     }
+
     /**
      * Store a newly created transaction in storage.
      */
     public function store(Request $request): RedirectResponse
     {
-        // Validate the skill_id
         $validated = $request->validate([
             'skill_id' => 'required|exists:skills,id',
         ]);
 
-        // Get the skill
         $skill = Skill::findOrFail($validated['skill_id']);
 
-        // Prevent user from creating a transaction for their own skill
         if ($skill->user_id === Auth::id()) {
             return redirect()->back()
                 ->with('error', 'You cannot create a transaction for your own skill.');
         }
 
-        // Check if a pending transaction already exists for this skill and user
         $existingTransaction = Transaction::where('skill_id', $skill->id)
             ->where('receiver_id', Auth::id())
             ->where('status', 'pending')
@@ -74,11 +70,10 @@ class TransactionController extends Controller
                 ->with('error', 'You already have a pending request for this skill.');
         }
 
-        // Create the transaction
         Transaction::create([
             'skill_id' => $skill->id,
-            'provider_id' => $skill->user_id,  // Owner of the skill
-            'receiver_id' => Auth::id(),        // Current user
+            'provider_id' => $skill->user_id,
+            'receiver_id' => Auth::id(),
             'status' => 'pending',
         ]);
 
@@ -91,77 +86,87 @@ class TransactionController extends Controller
      */
     public function update(Request $request, Transaction $transaction): RedirectResponse
     {
-        // Authorize that the user can update this transaction
         if (Auth::id() !== $transaction->provider_id && Auth::id() !== $transaction->receiver_id) {
-            return redirect()->back()
-                ->with('error', 'Unauthorized action.');
+            return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
-        // Validate the status
+        // MODIFIED: Validate both start date and end date from the scheduling form
         $validated = $request->validate([
             'status' => 'required|in:accepted,rejected',
             'scheduled_date' => 'required_if:status,accepted|nullable|date',
+            'scheduled_end_date' => 'required_if:status,accepted|nullable|date|after:scheduled_date',
         ]);
 
         try {
-            // Update the transaction status
+            // Update the transaction model status and start date
             $transaction->update([
                 'status' => $validated['status'],
                 'scheduled_date' => $validated['scheduled_date'] ?? $transaction->scheduled_date,
             ]);
 
-            // If status is accepted and has a scheduled date, create Google Calendar event
             if ($validated['status'] === 'accepted' && $transaction->scheduled_date) {
-                $this->createCalendarEvent($transaction);
+                // Convert start time to string format safely
+               
+
+    // Force Laravel to treat the input as Manila time, then convert to RFC3339
+    $startDateString = $validated['scheduled_date'];
+    $endDateString = $validated['scheduled_end_date'];
+
+                // Capture end time from form request validation array
+                $endDateString = $validated['scheduled_end_date'];
+
+                // Trigger calendar generation with explicit boundaries
+                try {
+                    $this->createCalendarEvent($transaction, $startDateString, $endDateString);
+                } catch (\Google\Service\Exception $e) {
+                    if ($e->getCode() == 401) {
+                        Log::warning('Calendar token invalid for user ' . $transaction->provider_id);
+                    } else {
+                        Log::error('Google Calendar Sync Error: ' . $e->getMessage());
+                    }
+                } catch (Exception $e) {
+                    Log::error('General Calendar Error: ' . $e->getMessage());
+                }
             }
 
             $statusMessage = ucfirst($validated['status']);
-            return redirect()->back()
-                ->with('success', "Swap request {$statusMessage}!");
+            return redirect()->back()->with('success', "Swap request {$statusMessage}!");
         } catch (Exception $e) {
-            // 2. Changed \Log::error to Log::error
             Log::error('Transaction Update Error: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'An error occurred while updating the transaction.');
+            return redirect()->back()->with('error', 'An error occurred while updating the transaction.');
         }
     }
 
     /**
-     * Create a Google Calendar event for the swap meeting.
+     * Create a Google Calendar event for the swap meeting with exact start and end ranges.
      */
-    private function createCalendarEvent(Transaction $transaction): void
+    private function createCalendarEvent(Transaction $transaction, string $startDateString, string $endDateString): void
     {
         try {
-            // Reload transaction with relationships
             $transaction = $transaction->load(['provider', 'receiver', 'skill']);
             
-            // Only create event if the provider has Google tokens
             if (!$transaction->provider->google_access_token) {
-                // 3. Changed \Log::info to Log::info
                 Log::info('Provider has not authorized Google Calendar access.');
                 return;
             }
 
             $calendarService = new CalendarService();
             $skill = $transaction->skill;
-            $eventTitle = "SkillSwap Meeting: {$skill->title}";
-            $eventDescription = "Swap meeting between {$transaction->receiver->name} and {$transaction->provider->name}. "
-                . "Skill: {$skill->title}\n\nCategory: {$skill->category}\nType: {$skill->type}";
+            $attendees = [$transaction->provider->email, $transaction->receiver->email];
 
-            // Create event on provider's calendar
             $calendarService->createSkillSwapEvent(
                 $transaction->provider,
-                $eventTitle,
-                $eventDescription,
-                $transaction->scheduled_date->format('Y-m-d H:i:s')
+                "SkillSwap Meeting: {$skill->title}",
+                "Swap meeting between {$transaction->receiver->name} and {$transaction->provider->name}.\n\nSkill: {$skill->title}",
+                $startDateString,
+                $endDateString, // Passed dynamic value directly to the parameter position
+                $attendees
             );
 
-            // 4. Changed \Log::info to Log::info
             Log::info('Calendar event created for transaction ID: ' . $transaction->id);
         } catch (Exception $e) {
-            // 5. Changed \Log::error to Log::error
-            Log::error('Failed to create calendar event: ' . $e->getMessage());
-            // Don't throw - we don't want calendar creation failure to break the transaction update
+            Log::error('Failed to parse relationships for calendar dispatch: ' . $e->getMessage());
+            throw $e;
         }
     }
 }
