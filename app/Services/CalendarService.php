@@ -33,20 +33,31 @@ class CalendarService
     public function createSkillSwapEvent(User $user, $title, $description, $startDateTime, $endDateTime = null): ?Event
     {
         try {
-            // Decode the access token safely
-            $accessToken = is_string($user->google_access_token) 
-                ? json_decode($user->google_access_token, true)
+            // FORCE RECONSTRUCTION: Handle raw string vs array
+            $tokenData = is_string($user->google_access_token) 
+                ? json_decode($user->google_access_token, true) 
                 : $user->google_access_token;
+
+            // If decoding failed or it's not a proper token array, rebuild it
+            if (!$tokenData || !isset($tokenData['access_token'])) {
+                $tokenData = [
+                    'access_token'  => is_array($tokenData) ? ($tokenData['access_token'] ?? '') : $user->google_access_token,
+                    'refresh_token' => $user->google_refresh_token,
+                    'token_type'    => 'Bearer',
+                    'expires_in'    => 3600,
+                    'created'       => time()
+                ];
+            }
             
             // Set the token
-            $this->client->setAccessToken($accessToken);
+            $this->client->setAccessToken($tokenData);
 
             // Check if token is expired and refresh if necessary
             if ($this->client->isAccessTokenExpired()) {
                 $this->client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
                 $newAccessToken = $this->client->getAccessToken();
                 
-                // Store the refreshed token back to the database
+                // Store the refreshed token back to the database as JSON
                 $user->update([
                     'google_access_token' => json_encode($newAccessToken),
                 ]);
