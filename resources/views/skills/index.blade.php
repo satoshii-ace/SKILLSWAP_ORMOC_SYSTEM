@@ -22,6 +22,16 @@
                 <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ session('error') }}
                 </div>
+                @if ($errors->any())
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <strong class="font-bold">Wait! The system caught an error:</strong>
+                    <ul class="list-disc ml-5 mt-2 text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             @endif
 
             @if ($skills->count())

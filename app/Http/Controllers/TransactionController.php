@@ -12,7 +12,38 @@ use Illuminate\Support\Facades\Log; // 1. Added the Log Facade here!
 use Exception;
 
 class TransactionController extends Controller
-{
+{   
+    /**
+     * Display a listing of the user's swap requests and schedules.
+     */
+    public function index()
+    {
+        // 1. Incoming Requests (Needs Action)
+        $incomingRequests = Transaction::with(['skill', 'receiver'])
+            ->where('provider_id', Auth::id())
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        // 2. Upcoming Scheduled Swaps (Accepted meetings for BOTH users)
+        $scheduledSwaps = Transaction::with(['skill', 'provider', 'receiver'])
+            ->where('status', 'accepted')
+            ->where(function($query) {
+                $query->where('provider_id', Auth::id())
+                      ->orWhere('receiver_id', Auth::id());
+            })
+            ->orderBy('scheduled_date', 'asc')
+            ->get();
+
+        // 3. My Sent Requests (Only show pending or rejected, accepted goes to schedule)
+        $myRequests = Transaction::with(['skill', 'provider'])
+            ->where('receiver_id', Auth::id())
+            ->whereIn('status', ['pending', 'rejected'])
+            ->latest()
+            ->get();
+
+        return view('swaps.index', compact('incomingRequests', 'scheduledSwaps', 'myRequests'));
+    }
     /**
      * Store a newly created transaction in storage.
      */
@@ -69,7 +100,7 @@ class TransactionController extends Controller
         // Validate the status
         $validated = $request->validate([
             'status' => 'required|in:accepted,rejected',
-            'scheduled_date' => 'required_if:status,accepted|nullable|date_format:Y-m-d H:i',
+            'scheduled_date' => 'required_if:status,accepted|nullable|date',
         ]);
 
         try {

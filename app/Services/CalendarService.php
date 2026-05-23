@@ -7,12 +7,11 @@ use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
 use App\Models\User;
-use Illuminate\Support\Facades\Log; // 1. Added the Log Facade import here!
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class CalendarService
 {
-    // 2. Added type-hints here so VS Code knows what these are
     protected Client $client;
     protected Calendar $calendarService;
 
@@ -24,6 +23,8 @@ class CalendarService
         $this->client->setClientSecret(config('services.google.client_secret'));
         $this->client->setRedirectUri(config('services.google.redirect'));
         $this->client->addScope(Calendar::CALENDAR);
+        $this->client->setAccessType('offline');
+        $this->client->setPrompt('consent select_account');
     }
 
     /**
@@ -32,23 +33,20 @@ class CalendarService
     public function createSkillSwapEvent(User $user, $title, $description, $startDateTime, $endDateTime = null): ?Event
     {
         try {
-            // Decode and set the user's access token
+            // Decode the access token safely
             $accessToken = is_string($user->google_access_token) 
                 ? json_decode($user->google_access_token, true)
                 : $user->google_access_token;
             
-            // Ensure access_token key exists for Google Client
-            if (is_array($accessToken) && !isset($accessToken['access_token'])) {
-                throw new Exception('Invalid Google access token format.');
-            }
-                
+            // Set the token
             $this->client->setAccessToken($accessToken);
 
-            // Check if token needs refresh
+            // Check if token is expired and refresh if necessary
             if ($this->client->isAccessTokenExpired()) {
-                $this->client->refreshToken($user->google_refresh_token);
-                // Store the refreshed token
+                $this->client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
                 $newAccessToken = $this->client->getAccessToken();
+                
+                // Store the refreshed token back to the database
                 $user->update([
                     'google_access_token' => json_encode($newAccessToken),
                 ]);
@@ -58,8 +56,9 @@ class CalendarService
 
             // If no end time specified, make it 1 hour after start time
             if (!$endDateTime) {
-                $startDt = \DateTime::createFromFormat('Y-m-d H:i:s', $startDateTime);
-                $endDateTime = $startDt->modify('+1 hour')->format('Y-m-d H:i:s');
+                $startDt = new \DateTime($startDateTime);
+                $endDt = clone $startDt;
+                $endDateTime = $endDt->modify('+1 hour')->format('Y-m-d H:i:s');
             }
 
             $event = new Event();
@@ -67,19 +66,17 @@ class CalendarService
             $event->setDescription($description);
             $event->setStart(new EventDateTime([
                 'dateTime' => (new \DateTime($startDateTime))->format(\DateTime::RFC3339),
-                'timeZone' => 'UTC',
+                'timeZone' => config('app.timezone', 'UTC'),
             ]));
             $event->setEnd(new EventDateTime([
                 'dateTime' => (new \DateTime($endDateTime))->format(\DateTime::RFC3339),
-                'timeZone' => 'UTC',
+                'timeZone' => config('app.timezone', 'UTC'),
             ]));
 
-            // Create the event
-            $createdEvent = $this->calendarService->events->insert('primary', $event);
+            // Create the event on the primary calendar
+            return $this->calendarService->events->insert('primary', $event);
 
-            return $createdEvent;
         } catch (Exception $e) {
-            // 3. Changed \Log::error to Log::error
             Log::error('Calendar Event Creation Error: ' . $e->getMessage());
             throw $e;
         }
