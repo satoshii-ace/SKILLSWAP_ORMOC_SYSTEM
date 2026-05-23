@@ -59,4 +59,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Skill::class);
     }
+    public function getSwapStreakAttribute()
+{
+    // Instead of calling $this->swaps() which doesn't exist,
+    // we use the 'skills' relationship we know is working.
+    // This counts skills posted in the last 3 weeks as a "streak" proxy.
+    return $this->skills()
+        ->where('created_at', '>=', now()->subWeeks(3))
+        ->count();
+}
 }

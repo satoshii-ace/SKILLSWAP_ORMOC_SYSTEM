@@ -5,6 +5,7 @@ use App\Http\Controllers\SkillController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth; 
+use App\Models\Skill;
 
 Route::get('/', function () {
     return Auth::check() 
@@ -13,11 +14,15 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    // VS Code understands this perfectly
-    $user = request()->user(); 
+    // 2. Use Auth::user() instead of auth()->user()
+    $user = Auth::user(); 
     
-    // Fetch only the skills belonging to the logged-in user
-    $mySkills = $user->skills()->latest()->get();
+    // Safety check: if for some reason the user isn't logged in, redirect them
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    $mySkills = $user->skills; 
     
     return view('dashboard', compact('mySkills'));
 })->middleware(['auth', 'verified'])->name('dashboard');
