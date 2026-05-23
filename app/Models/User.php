@@ -52,4 +52,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    /**
+     * Get the skills associated with the user.
+     */
+    public function skills()
+    {
+        return $this->hasMany(Skill::class);
+    }
 }

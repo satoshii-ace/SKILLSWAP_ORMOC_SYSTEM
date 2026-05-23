@@ -33,6 +33,7 @@ class Skill extends Model
     {
         return [
             'type' => 'string',
+            'created_at' => 'datetime',
         ];
     }
 

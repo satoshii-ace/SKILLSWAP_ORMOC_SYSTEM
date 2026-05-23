@@ -13,7 +13,13 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return redirect()->route('skills.index');
+    // VS Code understands this perfectly
+    $user = request()->user(); 
+    
+    // Fetch only the skills belonging to the logged-in user
+    $mySkills = $user->skills()->latest()->get();
+    
+    return view('dashboard', compact('mySkills'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -26,9 +32,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/skills', [SkillController::class, 'index'])->name('skills.index');
     Route::get('/skills/create', [SkillController::class, 'create'])->name('skills.create');
     Route::post('/skills', [SkillController::class, 'store'])->name('skills.store');
+    
+    // --> THESE ARE THE TWO NEW ROUTES YOU NEEDED <--
+    Route::get('/skills/{skill}/edit', [SkillController::class, 'edit'])->name('skills.edit');
+    Route::patch('/skills/{skill}', [SkillController::class, 'update'])->name('skills.update'); // ADD THIS LINE!
+    Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('skills.destroy');
 
     // Transaction & Swap Routes
-    Route::get('/swaps', [TransactionController::class, 'index'])->name('swaps.index'); // <- New My Swaps Route!
+    Route::get('/swaps', [TransactionController::class, 'index'])->name('swaps.index');
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
 
