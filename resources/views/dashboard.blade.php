@@ -9,12 +9,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             
             @if (session('success'))
-                <div class="p-4 bg-green-900/50 border border-green-500 text-green-400 rounded-xl shadow-md">
+                <div class="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl shadow-md">
                     {{ session('success') }}
                 </div>
             @endif
             @if (session('error'))
-                <div class="p-4 bg-red-900/50 border border-red-500 text-red-400 rounded-xl shadow-md">
+                <div class="p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-xl shadow-md">
                     {{ session('error') }}
                 </div>
             @endif
@@ -25,13 +25,13 @@
                     <p class="text-3xl font-bold text-white mt-2">{{ $mySkills->count() }}</p>
                 </div>
 
-                <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-orange-500/30 rounded-xl p-6 shadow-md relative overflow-hidden group hover:border-orange-500/60 transition-all duration-300">
-                    <div class="absolute -right-4 -top-4 text-orange-500/10 pointer-events-none group-hover:text-orange-500/20 transition-all duration-300">
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-teal-500/30 rounded-xl p-6 shadow-md relative overflow-hidden group hover:border-teal-500/60 transition-all duration-300">
+                    <div class="absolute -right-4 -top-4 text-teal-500/10 pointer-events-none group-hover:text-teal-500/20 transition-all duration-300">
                         <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
                     </div>
 
                     <div class="relative z-10">
-                        <h3 class="text-orange-400 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                        <h3 class="text-teal-400 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03z" clip-rule="evenodd"></path></svg>
                             Swap Streak
                         </h3>
@@ -53,9 +53,9 @@
                     </div>
                 </div>
 
-                <div class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 shadow-md flex flex-col justify-center items-start">
-                    <h3 class="text-blue-400 text-sm font-bold uppercase tracking-wider mb-2">Google Calendar</h3>
-                    <a href="{{ route('profile.edit') }}" class="text-white font-bold hover:text-blue-300 transition flex items-center gap-2">
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-md flex flex-col justify-center items-start">
+                    <h3 class="text-teal-400 text-sm font-bold uppercase tracking-wider mb-2">Google Calendar</h3>
+                    <a href="{{ route('profile.edit') }}" class="text-white font-bold hover:text-teal-300 transition flex items-center gap-2">
                         Manage Connection &rarr;
                     </a>
                 </div>
@@ -64,7 +64,7 @@
             <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-md overflow-hidden relative">
                 <div class="p-6 border-b border-gray-700 flex justify-between items-center">
                     <h3 class="text-lg font-bold text-white">Manage Your Skills</h3>
-                    <a href="{{ route('skills.create') }}" class="text-sm bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    <a href="{{ route('skills.create') }}" class="text-sm bg-teal-500 hover:bg-teal-400 text-white font-bold py-2 px-4 rounded-lg transition shadow-[0_0_15px_rgba(20,184,166,0.15)] hover:shadow-[0_0_20px_rgba(20,184,166,0.3)]">
                         + Add New Skill
                     </a>
                 </div>
@@ -76,7 +76,7 @@
                                 <div class="min-w-0 flex-1 w-full">
                                     <div class="flex items-center gap-3 mb-1">
                                         <h4 class="text-md font-bold text-gray-100 truncate">{{ $skill->title }}</h4>
-                                        <span class="bg-blue-900/30 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase whitespace-nowrap shrink-0">
+                                        <span class="bg-teal-900/30 text-teal-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase whitespace-nowrap shrink-0">
                                             {{ $skill->category }}
                                         </span>
                                     </div>
@@ -121,10 +121,10 @@
                 <p class="text-sm text-gray-400 mt-2">This action cannot be undone.</p>
                 
                 <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-                    <button @click="isModalOpen = false" type="button" class="w-full sm:w-auto px-4 py-2 bg-gray-700 rounded-lg text-sm text-gray-300 hover:text-white">Cancel</button>
+                    <button @click="isModalOpen = false" type="button" class="w-full sm:w-auto px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-300 hover:text-white transition">Cancel</button>
                     <form method="POST" :action="deleteUrl" class="m-0 w-full sm:w-auto">
                         @csrf @method('DELETE')
-                        <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-red-600 rounded-lg text-sm text-white hover:bg-red-700">Yes, Delete</button>
+                        <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm text-white transition">Yes, Delete</button>
                     </form>
                 </div>
             </div>

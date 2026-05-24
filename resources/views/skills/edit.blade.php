@@ -6,94 +6,97 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            
             @if (session('error'))
-                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                <div class="p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-xl shadow-md">
                     {{ session('error') }}
                 </div>
             @endif
 
             @if (session('success'))
-                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                <div class="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl shadow-md">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-gray-800 border border-gray-700 overflow-hidden shadow-md sm:rounded-xl p-8">
                 <form method="POST" action="{{ route('skills.update', $skill->id) }}" class="space-y-6">
                     @csrf
                     @method('PATCH')
 
                     <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label for="title" class="block text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">
                             {{ __('Title') }}
                         </label>
                         <input type="text" name="title" id="title" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white @error('title') border-red-500 @else border @endif"
+                            class="mt-1 block w-full rounded-lg bg-gray-900 text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm transition-colors @error('title') border-red-500 @else border-gray-700 @endif"
                             value="{{ old('title', $skill->title) }}"
                             placeholder="e.g., Web Development"
                             required>
                         @error('title')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-xs text-red-400 font-semibold">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label for="description" class="block text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">
                             {{ __('Description') }}
                         </label>
-                        <textarea name="description" id="description" rows="4"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white @error('description') border-red-500 @else border @endif"
+                        <textarea name="description" id="description" rows="5"
+                            class="mt-1 block w-full rounded-lg bg-gray-900 text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm transition-colors @error('description') border-red-500 @else border-gray-700 @endif"
                             placeholder="Describe your skill in detail..."
                             required>{{ old('description', $skill->description) }}</textarea>
                         @error('description')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-xs text-red-400 font-semibold">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {{ __('Category') }}
-                        </label>
-                        <select name="category" id="category"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white @error('category') border-red-500 @else border @endif"
-                            required>
-                            <option value="">{{ __('Select a category') }}</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category }}" @selected(old('category', $skill->category) === $category)>
-                                    {{ $category }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('category')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="category" class="block text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">
+                                {{ __('Category') }}
+                            </label>
+                            <select name="category" id="category"
+                                class="mt-1 block w-full rounded-lg bg-gray-900 text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm transition-colors @error('category') border-red-500 @else border-gray-700 @endif"
+                                required>
+                                <option value="">{{ __('Select a category') }}</option>
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category }}" @selected(old('category', $skill->category) === $category)>
+                                        {{ $category }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category')
+                                <p class="mt-2 text-xs text-red-400 font-semibold">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="type" class="block text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">
+                                {{ __('Type') }}
+                            </label>
+                            <select name="type" id="type"
+                                class="mt-1 block w-full rounded-lg bg-gray-900 text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm transition-colors @error('type') border-red-500 @else border-gray-700 @endif"
+                                required>
+                                <option value="">{{ __('Select type') }}</option>
+                                @foreach ($types as $typeOption)
+                                    <option value="{{ $typeOption }}" @selected(old('type', $skill->type) === $typeOption)>
+                                        {{ ucfirst($typeOption) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('type')
+                                <p class="mt-2 text-xs text-red-400 font-semibold">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {{ __('Type') }}
-                        </label>
-                        <select name="type" id="type"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white @error('type') border-red-500 @else border @endif"
-                            required>
-                            <option value="">{{ __('Select type') }}</option>
-                            @foreach ($types as $typeOption)
-                                <option value="{{ $typeOption }}" @selected(old('type', $skill->type) === $typeOption)>
-                                    {{ ucfirst($typeOption) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('type')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <div class="pt-6 mt-6 border-t border-gray-700 flex flex-row-reverse items-center justify-start gap-4">
+                        <button type="submit" class="bg-teal-500 hover:bg-teal-400 text-white font-bold py-2.5 px-6 rounded-lg transition shadow-[0_0_15px_rgba(20,184,166,0.15)] hover:shadow-[0_0_20px_rgba(20,184,166,0.3)]">
                             {{ __('Update Skill') }}
                         </button>
-                        <a href="{{ route('dashboard') }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                        <a href="{{ route('dashboard') }}" class="text-sm font-semibold text-gray-400 hover:text-white transition">
                             {{ __('Cancel') }}
                         </a>
                     </div>

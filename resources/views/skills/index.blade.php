@@ -8,7 +8,7 @@
     <div class="py-12" x-data="{ search: '', category: 'All' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
+            @if (session('success'))
                 <div class="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl shadow-sm">
                     {{ session('success') }}
                 </div>
@@ -22,9 +22,9 @@
             
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
                 <input x-model="search" type="text" placeholder="Search skills by title..." 
-                       class="flex-1 bg-gray-900 border-gray-700 rounded-lg text-white text-sm focus:ring-blue-500">
+                       class="flex-1 bg-gray-900 border-gray-700 rounded-lg text-white text-sm focus:ring-teal-500 focus:border-teal-500">
                 
-                <select x-model="category" class="bg-gray-900 border-gray-700 rounded-lg text-white text-sm focus:ring-blue-500">
+                <select x-model="category" class="bg-gray-900 border-gray-700 rounded-lg text-white text-sm focus:ring-teal-500 focus:border-teal-500">
                     <option value="All">All Categories</option>
                     @foreach($skills->unique('category') as $s)
                         <option value="{{ $s->category }}">{{ $s->category }}</option>
@@ -35,10 +35,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($skills as $skill)
                     <div x-show="(search === '' || '{{ strtolower($skill->title) }}'.includes(search.toLowerCase())) && (category === 'All' || '{{ $skill->category }}' === category)"
-                         class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-700 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:border-blue-500/30">
+                         class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-700 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:border-teal-500/40">
                         
                         <div class="flex gap-2 mb-4">
-                            <span class="bg-blue-900/30 text-blue-400 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                            <span class="bg-teal-900/30 text-teal-400 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
                                 {{ $skill->category }}
                             </span>
                             <span class="{{ $skill->type === 'offered' ? 'bg-green-900/30 text-green-400' : 'bg-amber-900/30 text-amber-400' }} text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
@@ -54,7 +54,7 @@
 
                         <div class="border-t border-gray-700 pt-4 mt-auto">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
+                                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold text-white shadow-inner">
                                     {{ substr($skill->user->name, 0, 1) }}
                                 </div>
                                 <div>
@@ -68,7 +68,7 @@
                             <form method="POST" action="{{ route('transactions.store') }}" class="mt-6">
                                 @csrf
                                 <input type="hidden" name="skill_id" value="{{ $skill->id }}">
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition text-sm">
+                                <button type="submit" class="w-full bg-teal-500 hover:bg-teal-400 text-white font-bold py-2 rounded-lg transition text-sm shadow-[0_0_15px_rgba(20,184,166,0.15)] hover:shadow-[0_0_20px_rgba(20,184,166,0.3)]">
                                     Request Swap
                                 </button>
                             </form>
