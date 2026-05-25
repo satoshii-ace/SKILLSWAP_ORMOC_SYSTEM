@@ -33,21 +33,23 @@
                     <div class="relative z-10">
                         <h3 class="text-teal-400 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03z" clip-rule="evenodd"></path></svg>
-                            Swap Streak
+                            Swaps Completed
                         </h3>
                         <p class="text-3xl font-bold text-white mt-1">
                             {{ auth()->user()->swapStreak }} 
                             <span class="text-sm text-gray-400 font-normal">
-                                {{ auth()->user()->swapStreak === 1 ? 'Week' : 'Weeks' }}
+                                {{ auth()->user()->swapStreak === 1 ? 'Swap' : 'Swaps' }}
                             </span>
                         </p>
                         <p class="text-[10px] text-gray-500 mt-2 uppercase tracking-widest font-bold">
                             @if(auth()->user()->swapStreak === 0)
-                                Start your streak today
+                                Complete your first swap today
                             @elseif(auth()->user()->swapStreak === 1)
-                                Great start! Keep it going.
+                                Great start! Keep exchanging skills.
+                            @elseif(auth()->user()->swapStreak < 5)
+                                You're building momentum!
                             @else
-                                You are on fire!
+                                You're a swapping champion!
                             @endif
                         </p>
                     </div>
